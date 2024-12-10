@@ -1,64 +1,54 @@
-import pygame
+from vec import vec
 
 i=open(0).read()
 l=i.index('\n')
 
-walls=[]
-start_pos=pygame.math.Vector2(0, 0)
-start_dir=pygame.math.Vector2(0, 0)
+walls=set()
+start_pos=vec(0, 0)
+start_dir=vec(0, 0)
 
 for y in range(l):
     for x in range(l):
         c=i[y * (l + 1) + x]
         match c:
             case '#':
-                walls.append(pygame.math.Vector2(x, y))
+                walls.add(vec(x, y))
             case '^' | '>' | 'v' | '^':
-                start_pos=pygame.math.Vector2([x, y])
-                match c:
-                    case '^':
-                        start_dir=pygame.math.Vector2([0, -1])
-                    case '>':
-                        start_dir=pygame.math.Vector2([1, 0])
-                    case 'v':
-                        start_dir=pygame.math.Vector2([0, 1])
-                    case '<':
-                        start_dir=pygame.math.Vector2([-1, 0])
+                start_pos=vec(x, y)
+                start_dir=vec(c)
 
 obstructions=[]
 
-for y in range(l):
-    for x in range(l):
-        o=pygame.math.Vector2(x, y)
-       
-        if o == start_pos or o in walls:
-            continue
+pos=start_pos
+dir=start_dir
 
-        walls.append(o)
-        visited=[]
+while pos.x >= 0 and pos.x < l and pos.y >= 0 and pos.y < l:
+    visited={}
+    rot = dir
+    cpy = pos
+    n = pos + dir
 
-        pos=start_pos
-        dir=start_dir
-        
-        while pos.x >= 0 and pos.x < l and pos.y >= 0 and pos.y < l:
-            vis=[*(x for (x, y) in visited)]
+    if n not in walls and n.x >= 0 and n.x < l and n.y >= 0 and n.y < l:
+        walls.add(n)
+    
+        while cpy.x >= 0 and cpy.x < l and cpy.y >= 0 and cpy.y < l:
+            if cpy in visited and visited[cpy] == rot:
+                obstructions.append(n)
+                break
+    
+            if cpy not in visited:
+                visited[cpy] = rot
+            
+            while cpy + rot in walls:
+                rot = rot.rotate()
+    
+            cpy = cpy + rot
+    
+        walls.remove(n)
+   
+    while pos + dir in walls:
+        dir = dir.rotate()
 
-            if pos in vis:
-                if visited[vis.index(pos)][1].angle_to(dir) < 5:
-                    print('obstruction: ', o)
-                    obstructions.append(o)
-                    break
-            else:
-                visited.append((pos.copy(), dir.copy()))
-        
-            next = pos + dir
-        
-            if (walls.count(next)):
-                dir.rotate_ip(90)
-                next = pos + dir
-        
-            pos = next
-
-        walls.remove(o)
+    pos = pos + dir
 
 print(len(obstructions))

@@ -1,41 +1,42 @@
-import pygame
+from vec import vec
 
-i=open(0).read()
-l=i.index('\n')
+def debug(size, map, visited):
+	for y in range(size):
+		for x in range(size):
+			if vec(x, y) in visited:
+				print('X', end='')
+			else:
+				print(map[y * (size + 1) + x], end='')
+		print()
 
-walls=[]
-pos=pygame.math.Vector2(0, 0)
-pos=pygame.math.Vector2(0, 0)
-visited=[]
+map=open(0).read()
+size=map.index('\n')
 
-for y in range(l):
-    for x in range(l):
-        c=i[y * (l + 1) + x]
-        match c:
-            case '#':
-                walls.append([x, y])
-            case '^' | '>' | 'v' | '^':
-                pos=pygame.math.Vector2([x, y])
-                match c:
-                    case '^':
-                        dir=pygame.math.Vector2([0, -1])
-                    case '>':
-                        dir=pygame.math.Vector2([1, 0])
-                    case 'v':
-                        dir=pygame.math.Vector2([0, 1])
-                    case '<':
-                        dir=pygame.math.Vector2([-1, 0])
+pos=vec(0, 0)
+dir=vec(0, 0)
+visited=set()
+walls=set()
 
-while pos.x >= 0 and pos.x < l and pos.y >= 0 and pos.y < l:
-    if pos not in visited:
-        visited.append(pos)
+for y in range(size):
+	for x in range(size):
+		c=map[y * (size + 1) + x]
+		match c:
+			case '#':
+				walls.add(vec(x, y))
+			case '^' | '>' | 'v' | '^':
+				pos=vec(x, y)
+				dir=vec(c)
 
-    next = pos + dir
+while pos.x >= 0 and pos.x < size and pos.y >= 0 and pos.y < size:
+	if pos not in visited:
+		visited.add(pos)
 
-    if (walls.count(next)):
-        dir.rotate_ip(90)
-        next = pos + dir
+	next = pos + dir
 
-    pos = next
+	while next in walls:
+		dir = dir.rotate()
+		next = pos + dir
+
+	pos = next
 
 print(len(visited))

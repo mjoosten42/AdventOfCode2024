@@ -34,9 +34,29 @@ class vec:
 	def __add__(self, other):
 		return vec(self.x + other.x, self.y + other.y)
 
+	def __sub__(self, other):
+		return vec(self.x - other.x, self.y - other.y)
+	
+	def __div__(self, other):
+		return vec(self.x / other.x, self.y / other.y)
+	
+	def __floordiv__(self, other):
+		return vec(self.x % other.x, self.y % other.y)
+	
+	def __iadd__(self, other):
+		self.x += other.x
+		self.y += other.y
+		return self
+	
+	def __neg__(self):
+		return vec(-self.x, -self.y)
+	
 	def copy(self):
 		return vec(self.x, self.y)
 
 	def rotate(self):
 		return vec(-self.y, self.x)
+	
+	def is_inside(self, max):
+		return self.x >= 0 and self.x < max.x and self.y >= 0 and self.y < max.y
 	

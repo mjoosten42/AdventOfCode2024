@@ -37,8 +37,11 @@ class vec:
 	def __sub__(self, other):
 		return vec(self.x - other.x, self.y - other.y)
 	
-	def __div__(self, other):
-		return vec(self.x / other.x, self.y / other.y)
+	def __mul__(self, n):
+		return vec(self.x * n, self.y * n)
+
+	def __truediv__(self, n):
+		return vec(self.x / n, self.y / n)
 	
 	def __floordiv__(self, other):
 		return vec(self.x % other.x, self.y % other.y)
@@ -59,4 +62,10 @@ class vec:
 	
 	def is_inside(self, max):
 		return self.x >= 0 and self.x < max.x and self.y >= 0 and self.y < max.y
-	
+
+	def neighbours(self):
+		return [self + x for x in [vec(1, 0), vec(0, 1), vec(-1, 0), vec(0, -1)]] 
+
+	def inside_neighbours(self, max):
+		return [x for x in self.neighbours() if x.is_inside(max)]
+

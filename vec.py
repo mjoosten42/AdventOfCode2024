@@ -33,12 +33,21 @@ class vec:
 
 	def __repr__(self):
 		return str(self)
-	
+
+	def __format__(self, fmt):
+		return f"[{self.x:{fmt}}, {self.y:{fmt}}]"
+
 	def __eq__(self, other):
 		return self.x == other.x and self.y == other.y
 
+	def __gt__(self, other):
+		return self.x > other.x and self.y > other.y
+
 	def __hash__(self):
 		return hash((self.x, self.y))
+
+	def __abs__(self):
+		return vec(abs(self.x), abs(self.y))
 
 	def __add__(self, other):
 		return vec(self.x + other.x, self.y + other.y)
@@ -69,8 +78,11 @@ class vec:
 	def copy(self):
 		return vec(self.x, self.y)
 
+	def length_squared(self):
+		return self.x * self.x + self.y + self.y
+
 	def magnitude(self):
-		return math.isqrt(self.x * self.x + self.y * self.y)
+		return math.isqrt(length_squared())
 
 	def rotate(self):
 		return vec(-self.y, self.x)

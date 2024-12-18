@@ -1,84 +1,36 @@
 from vec import vec
 import sys
 
-def reconstruct(cameFrom, pos):
-    path = [pos]
+def search(maze, start, end):
+    queue: list[tuple[int, list[vec]]] = [(0, [start])]
+    shortest = (sys.maxsize, [])
+    score = { pos: sys.maxsize for pos in maze }
+    score[start] = 0
 
-    while pos in cameFrom:
-        pos = cameFrom[pos]
-        path.insert(0, pos)
+    while queue:
+        cost, path = queue.pop(0)
+        node = path[-1]
 
-    return path
+        print(len(path), end='\r')
 
-def h(first, second):
-    sub = abs(second - first)
-
-    return (sub.x + sub.y)
-
-def debug_tiles(maze, tiles):
-    limit = max(maze)
-
-    for y in range(limit.y + 1):
-        for x in range(limit.x + 1):
-            pos = vec(x, y)
-
-            if pos in tiles:
-                print('O', end='')
-            else:
-                print(maze[pos], end='')
-        print()
-    print()
-
-def debug_cost(maze, gScore):
-    limit = max(maze)
-
-    for y in range(limit.y + 1):
-        for x in range(limit.x + 1):
-            pos = vec(x, y)
-
-            if pos in gScore:
-                print(f" {gScore[pos]:5} ", end='')
-            else:
-                print(f" {maze[pos] * 5} ", end='')
-        print()
-        print()
-    print()
-
-def search(maze: dict[vec, str], start, end):
-    openSet = [start]
-    cameFrom: dict[vec, vec] = {}
-    gScore = { start: 0 }
-    fScore = { start: h(start, end) }
-
-    while openSet:
-        node = min(openSet, key=lambda x: fScore[x])
-
-        openSet.remove(node)
-
-        if node == end:
-            return reconstruct(cameFrom, node), gScore
+        if node == end and cost <= shortest[0]:
+            if cost < shortest[0]:
+                shortest = (cost, [])
+            shortest[1].append(path)
 
         for n in node.neighbours():
-            if n in maze and maze[n] != '#':
-                if n not in fScore:
-                    gScore[n] = sys.maxsize
-                
-                cost = 1
-    
-                if n - node != (vec(1, 0) if node not in cameFrom else node - cameFrom[node]):
-                    cost += 1000
+            if n in maze and maze[n] != '#' and n not in path:
+                olddir = vec(1, 0) if len(path) < 2 else node - path[-2]
+                add = 1 if olddir == n - node else 1001
+                newcost = cost + add
 
-                tentative_gScore = gScore[node] + cost
+                if newcost < score[n]:
+                    score[n] = newcost
 
-                if tentative_gScore < gScore[n]:
-                    cameFrom[n] = node
-                    gScore[n] = tentative_gScore
-                    fScore[n] = tentative_gScore + h(n, end)
+                if newcost < score[n] + 2000:
+                    queue.append((newcost, [*path.copy(), n]))
 
-                    if n not in openSet:
-                        openSet.append(n)
-
-    return None, None
+    return shortest[1]
 
 maze = {}
 
@@ -89,23 +41,7 @@ for y, line in enumerate(open(0).read().split('\n')):
 start = next(k for k, v in maze.items() if v == 'S')
 end = next(k for k, v in maze.items() if v == 'E')
 
-path, gScore = search(maze, start, end)
-
-tiles = set(path)
-
-for i, node in enumerate(path):
-    print(f"{100 * i // len(path)}%", end='\r')
-
-    if node != start and node != end:
-        maze[node] = '#'
-
-        p, score = search(maze, start, end)
-
-        if score and end in score and score[end] == gScore[end]:
-            tiles.update(p)
-
-        maze[node] = '.'
-
-debug_tiles(maze, tiles)
+paths = search(maze, start, end)
+tiles = set([node for path in paths for node in path])
 
 print(len(tiles))

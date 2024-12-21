@@ -116,6 +116,24 @@ class vec:
     def div(self, other):
         return self.x / other.x
 
+    def to_char(self):
+        match [self.x, self.y]:
+            case [1, 0]:
+                return '>'
+            case [0, 1]:
+                return 'v'
+            case [-1, 0]:
+                return '<'
+            case [0, -1]:
+                return '^'
+
+    def sign(self):
+       if not self.x:
+           return vec(0, self.y // abs(self.y))
+
+       if not self.y:
+           return vec(self.x // abs(self.x), 0)
+
 vec.ZERO = vec(0, 0)
 
 

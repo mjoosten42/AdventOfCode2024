@@ -1,14 +1,11 @@
-def remove(graph, node):
-    for nb in graph[node]:
-        graph[nb].remove(node)
-    graph.remove(nodei)
+def bron_kerbosh(graph, r, p, x):
+    if not p and not x:
+        yield r
 
-def lansize(graph, node):
-    size = 2
-
-    relevant = set(graph[node])
-
-    return size
+    for v in p.copy():
+        yield from bron_kerbosh(graph, r | { v }, p.intersection(graph[v]), x.intersection(graph[v]))
+        p.remove(v)
+        x = x | { v }
 
 def make_graph():
     graph = {}
@@ -23,7 +20,11 @@ def make_graph():
     return graph
 
 graph = make_graph()
+best, lan = 0, []
 
-print(len(graph))
+for a in bron_kerbosh(graph, set(), set(graph), set()):
+    if len(a) > best:
+        best = len(a)
+        lan = a
 
-print(lansize(graph, 'kh'))
+print(','.join(sorted(lan)))

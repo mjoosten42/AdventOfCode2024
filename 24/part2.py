@@ -23,34 +23,61 @@ def dependants(gates, wires):
 
 def solve(x, y, gates):
     z = run(x, y, gates)
-    
-    first_line = []
-    second_line = []
-    sus = ['z12']
+    tmp = ['kwb', 'jqn', 'rwq', 'tgr', 'z12', 'z13', 'z16', 'z24']
 
-    for i in range(44):
+    for i in range(2, 45):
         a = f"x{i:02}"
         b = f"y{i:02}"
+        c = f"z{i:02}"
 
-        for op in '^&':
-            for first, ope, second, res in gates.values():
-                if a == first and b == second and op == ope:
-                    first_line.append(res)
+        amin = f"x{i-1:02}"
+        bmin = f"y{i-1:02}"
 
-    first_line.remove('z00')
-    first_line.remove('z12')
-    
-    print(len(first_line))
-    print(first_line)
+        end = gates[c]
 
-    for gate in first_line:
-        first, op, second, res = gates[gate]
+        if end[1] != '^':
+            print('No XOR end:', end, c)
+            continue
 
-        if op == '&':
-            for f, o, s, r in gates.values():
-                if r[0] == 'z' and r[1].isdigit():
-                    second_line.append(r)
+        prf, dvr = gates[end[0]], gates[end[2]]
 
+        if prf[1] == '^':
+            prf, dvr = dvr, prf
+
+        if prf[1] == '^' and dvr[1] == '^':
+            print('Two XORS:', end, prf, dvr)
+
+        if dvr[0] != a or dvr[2] != b:
+            print('Should be for x and y:', end, dvr)
+
+        if prf[0] == a or prf[0] == b or prf[2] == a or prf[2] == b:
+            print('Should NOT be for x and y:', end, prf)
+            continue
+
+        svv, vpp = gates[prf[0]], gates[prf[2]]
+
+        if svv[1] != '&':
+            print('Should be AND:', end, prf, svv)
+
+        if vpp[1] != '&':
+            print('Should be AND:', end, prf, vpp)
+
+        if not ((svv[0] == amin and svv[2] == bmin) or (vpp[0] == amin or vpp[2] == bmin)):
+            print('One should be from x and y:', end, vpp, svv)
+            continue
+
+        if svv[0].startswith(('x', 'y')):
+            svv, vpp = vpp, svv
+
+        tcb, ptp = gates[svv[0]], gates[svv[2]]
+
+        if (tcb[1] == '^' and ptp[1] == '^') or (tcb[1] == '^' and ptp[1] == '^'):
+            print("Should be from XOR and OR:", end, prf, dvr, svv, tcb, ptp, gates['pgp'])
+
+
+    print(','.join(sorted(tmp)))
+
+        
 x, y = 0, 0
 bits = 0
 gates = {}

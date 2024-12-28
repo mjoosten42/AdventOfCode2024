@@ -36,25 +36,28 @@ def create_padmap(pad):
         padMap[first_button] = {}
 
         for second_button in pad.values():
-            if first_button != second_button:
-                start = next(x for x in pad if pad[x] == first_button)
-                end = next(x for x in pad if pad[x] == second_button)
+            start = next(x for x in pad if pad[x] == first_button)
+            end = next(x for x in pad if pad[x] == second_button)
 
-                padMap[first_button][second_button] = [*map(to_str, bfs(pad, start, end))]
+            padMap[first_button][second_button] = [*map(to_str, bfs(pad, start, end))]
 
     return padMap
 
-def buildSeq(keys, index, prevKey, currPath, result, padMap):
+def buildSeq(keys, index, prevKey, currPath, padMap):
     if index == len(keys):
-        result.append(currPath)
+        yield currPath
         return
-   
-    if prevKey not in padMap:
-        print(prevKey, padMap)
-
+  
     for path in padMap[prevKey][keys[index]]:
-        buildSeq(keys, index + 1, keys[index], currPath + path + 'A', result, padMap)
+        yield from buildSeq(keys, index + 1, keys[index], currPath + path + 'A', padMap)
 
+def split(code):
+    while 'A' in code:
+        i = code.index('A')
+
+        yield code[:i + 1]
+
+        code = code[i + 1:]
 
 def shortestSeq(keys, depth, cache):
     total = 0
@@ -63,17 +66,15 @@ def shortestSeq(keys, depth, cache):
         return len(keys)
 
     if depth in cache and keys in cache[depth]:
-        return cache[keys][depth]
+        return cache[depth][keys]
 
-    for subKey in keys.split('A'):
-        seqList = []
+    for subKey in split(keys):
+        seqList = list(buildSeq(subKey, 0, 'A', '', dirpadMap))
 
-        print('subkey:', subKey)
-        buildSeq(subKey, 0, 'A', '', seqList, dirpadMap)
         least = sys.maxsize
 
         for seq in seqList:
-            l = shortestSeq(seq, depth + 1, cache)
+            l = shortestSeq(seq, depth - 1, cache)
 
             if l < least:
                 least = l
@@ -91,25 +92,20 @@ def solve(codes, depth):
     cache = { }
     total = 0
 
-    for code in codes[:1]:
+    for code in codes:
         num = int(code[:-1])
 
-        numSeqList = []
+        numSeqList = list(buildSeq(code, 0, 'A', '', numpadMap))
 
-        buildSeq(code, 0, 'A', '', numSeqList, numpadMap)
         least = sys.maxsize
 
-        print(code, numSeqList)
-
         for seq in numSeqList:
-            print('seq:', seq)
             l = shortestSeq(seq, depth, cache)
 
             if l < least:
                 least = l
 
-        #total += (least * num)
-        total += least
+        total += (least * num)
 
     return total
 
@@ -120,5 +116,6 @@ dirpad = { vec(1, 0): '^', vec(2, 0): 'A', vec(0, 1): '<', vec(1, 1): 'v', vec(2
 numpadMap = create_padmap(numpad)
 dirpadMap = create_padmap(dirpad)
 
-print(solve(codes, 1))
+print(solve(codes, 25))
+
 
